@@ -158,13 +158,11 @@ aside {
 
 <div id="body">
 
+  Battery: <select id="batteryselect">
+    <option value="">All</option>
+  </select>
+
   <div id="charts">
-  <div id="battery">
-    Batt:
-    <select id="batteryselect">
-     <option value="">All</option>
-    </select>
-  </div>
   <div id="maxcurr-chart" class="chart">
     <div class="title">Max Current</div>
   </div>
@@ -280,6 +278,15 @@ d3.csv("summary.csv", function(error, tests) {
   var list = d3.selectAll(".list")
       .data([testList]);
 
+  var battsel = d3.select("#batteryselect");
+    battsel.on("change", function() {
+        var options = battsel.selectAll('option');
+        var selectedIndex = battsel.property('selectedIndex'),
+            data          = options[0][selectedIndex].__data__;
+        batt.filter(data ? data.key : null);
+        renderAll();
+  });
+ 
   // Render the total.
   d3.selectAll("#total")
       .text(formatNumber(test.size()));
@@ -296,14 +303,12 @@ d3.csv("summary.csv", function(error, tests) {
       chart.each(render);
       list.each(render);
 
-      var b = d3.select("#batteryselect").selectAll(".batt")
-          .data(batts.all(), function(d) { return d.key; });
+      var b = battsel.selectAll(".batt")
+          .data(batts.reduceCount().all().filter(function(d) { return d.value > 0; }));
 
       b.enter().append("option")
           .attr("class", "batt")
           .text(function(d) { return d.key; });
-
-      console.log(batts.all(), b.data(), batts.top(6));
 
       b.exit().remove();
 
