@@ -121,12 +121,13 @@ h1, h2 {
 
 #test-list {
   min-height: 1024px;
+  margin-top: 1em;
 }
 
 #test-list .test {
   line-height: 1.5em;
   background: #eee;
-  width: 640px;
+  width: 800px;
   margin-bottom: 1px;
 }
 
@@ -151,15 +152,21 @@ h1, h2 {
   text-align: left;
 }
 
+#test-list div.maxcurr {
+    width: 80px;
+}
+
 #test-list .early {
   color: green;
 }
 
-aside {
+#totals {
   position: absolute;
   left: 740px;
   font-size: smaller;
   width: 220px;
+    height: 1em;
+    margin-bottom: 1em;
 }
 
 </style>
@@ -195,8 +202,10 @@ aside {
 
 </div>
 
-<aside id="totals"><span id="active">-</span> of <span id="total">-</span> tests selected.</aside>
-
+<div>
+    <div id="totals"><span id="active">-</span> of <span id="total">-</span> tests selected.</div>
+</div>
+    
 <div id="lists">
   <div id="test-list" class="list"></div>
 </div>
@@ -400,6 +409,14 @@ d3.csv("summary.csv", function(error, tests) {
             .attr("class", "curr200")
             .text(function(d) { return d.curr200 + "A@200g"; });
 
+        testEnter.append("div")
+            .attr("class", "thr50")
+            .text(function(d) { return d.thr50 + "g@50%"; });
+
+        testEnter.append("div")
+            .attr("class", "maxthr")
+            .text(function(d) { return d.maxthr + "g max"; });
+        
         test.exit().remove();
 
       test.order();
