@@ -159,6 +159,12 @@ aside {
 <div id="body">
 
   <div id="charts">
+  <div id="battery">
+    Batt:
+    <select id="batteryselect">
+     <option value="">All</option>
+    </select>
+  </div>
   <div id="maxcurr-chart" class="chart">
     <div class="title">Max Current</div>
   </div>
@@ -237,7 +243,7 @@ d3.csv("summary.csv", function(error, tests) {
         .dimension(maxthr)
         .group(maxthrs)
           .x(d3.scale.linear()
-             .domain([100, 725])
+             .domain([100, 1100])
              .rangeRound([0, 400])),
 
     barChart()
@@ -289,6 +295,19 @@ d3.csv("summary.csv", function(error, tests) {
   function renderAll() {
       chart.each(render);
       list.each(render);
+
+      var b = d3.select("#batteryselect").selectAll(".batt")
+          .data(batts.all(), function(d) { return d.key; });
+
+      b.enter().append("option")
+          .attr("class", "batt")
+          .text(function(d) { return d.key; });
+
+      console.log(batts.all(), b.data(), batts.top(6));
+
+      b.exit().remove();
+
+
       d3.select("#active").text(formatNumber(all.value()));
   }
 
