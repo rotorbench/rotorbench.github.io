@@ -236,14 +236,14 @@ d3.csv("summary.csv", function(error, tests) {
         .dimension(maxcurr)
         .group(maxcurrs)
           .x(d3.scale.linear()
-             .domain([3,20])
+             .domain([3, 30])
              .rangeRound([0, 200])),
 
     barChart()
         .dimension(maxthr)
         .group(maxthrs)
           .x(d3.scale.linear()
-             .domain([100, 1100])
+             .domain([100, 1200])
              .rangeRound([0, 400])),
 
     barChart()
