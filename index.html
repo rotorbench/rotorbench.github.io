@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Rotorbench</title>
+<style>
+
+@import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
+
+body {
+  font-family: "Helvetica Neue";
+  margin: 40px auto;
+  width: 960px;
+  min-height: 2000px;
+}
+
+#body {
+  position: relative;
+}
+
+footer {
+  padding: 2em 0 1em 0;
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 96px;
+  margin-top: .3em;
+  margin-bottom: 0;
+}
+
+h1 + h2 {
+  margin-top: 0;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 28px;
+}
+
+h1, h2 {
+  font-family: "Yanone Kaffeesatz";
+  text-rendering: optimizeLegibility;
+}
+
+#body > p {
+  line-height: 1.5em;
+  width: 640px;
+  text-rendering: optimizeLegibility;
+}
+
+#charts {
+  padding: 10px 0;
+}
+
+.chart {
+  display: inline-block;
+  height: 151px;
+  margin-bottom: 20px;
+}
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.foreground.bar {
+  fill: steelblue;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.brush rect.extent {
+  fill: steelblue;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+
+#maxcurr-chart {
+  width: 260px;
+}
+
+#maxthr-chart {
+  width: 430px;
+}
+
+#pwm200-chart {
+  width: 460px;
+}
+
+#curr200-chart {
+  width: 260px;
+}
+
+#gpw200-chart {
+  width: 260px;
+}
+            
+#test-list {
+  min-height: 1024px;
+}
+
+#test-list .test {
+  line-height: 1.5em;
+  background: #eee;
+  width: 640px;
+  margin-bottom: 1px;
+}
+
+#test-list .time {
+  color: #999;
+}
+
+#test-list .test div.batt {
+    display: inline-block;
+    width: 40px;
+}
+
+#test-list .test div {
+  display: inline-block;
+    width: 120px;
+    text-align: right;
+}
+
+#test-list div.motor {
+  width: 180px;
+  padding-right: 10px;
+  text-align: left;
+}
+
+#test-list .early {
+  color: green;
+}
+
+aside {
+  position: absolute;
+  left: 740px;
+  font-size: smaller;
+  width: 220px;
+}
+
+</style>
+
+<div id="body">
+
+  <div id="charts">
+  <div id="maxcurr-chart" class="chart">
+    <div class="title">Max Current</div>
+  </div>
+  <div id="maxthr-chart" class="chart">
+    <div class="title">Max Thrust</div>
+  </div>
+  <div id="curr200-chart" class="chart">
+    <div class="title">Current at 200g</div>
+  </div>
+  <div id="pwm200-chart" class="chart">
+    <div class="title">PWM at 200g</div>
+  </div>
+  <div id="gpw200-chart" class="chart">
+    <div class="title">Grams per Watt at 200g</div>
+  </div>
+</div>
+
+<aside id="totals"><span id="active">-</span> of <span id="total">-</span> tests selected.</aside>
+
+<div id="lists">
+  <div id="test-list" class="list"></div>
+</div>
+
+</div>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://square.github.com/crossfilter/crossfilter.v1.min.js"></script>
+<script>
+
+d3.csv("summary.csv", function(error, tests) {
+
+  var nestByGPW = d3.nest()
+      .key(function(d) { return Math.floor(d.gpw200); });
+
+
+  // Various formatters.
+  var formatNumber = d3.format(",d"),
+      formatChange = d3.format("+,d");
+    
+  // A little coercion, since the CSV is untyped.
+  tests.forEach(function(d, i) {
+      d.index = i;
+      d.maxcurr = +d.maxcurr;
+      d.maxthr = +d.maxthr;
+      d.pwm200 = +d.pwm200;
+      d.curr200 = +d.curr200;
+      d.gpw200 = +d.gpw200;
+  });
+
+  // Create the crossfilter for the relevant dimensions and groups.
+  var test = crossfilter(tests),
+      all = test.groupAll(),
+      maxcurr = test.dimension(function(d) { return d.maxcurr; }),
+      maxcurrs = maxcurr.group(Math.floor),
+      maxthr = test.dimension(function(d) { return d.maxthr; }),
+      maxthrs = maxthr.group(Math.floor),
+      pwm200 = test.dimension(function(d) { return d.pwm200; }),
+      pwm200s = pwm200.group(Math.floor),
+      curr200 = test.dimension(function(d) { return d.curr200; }),
+      curr200s = curr200.group(Math.floor),
+      gpw200 = test.dimension(function(d) { return d.gpw200; }),
+      gpw200s = gpw200.group(Math.floor);
+      batt = test.dimension(function(d) { return d.batt; }),
+      batts = batt.group();
+
+  var charts = [
+
+    barChart()
+        .dimension(maxcurr)
+        .group(maxcurrs)
+          .x(d3.scale.linear()
+             .domain([3,20])
+             .rangeRound([0, 200])),
+
+    barChart()
+        .dimension(maxthr)
+        .group(maxthrs)
+          .x(d3.scale.linear()
+             .domain([100, 725])
+             .rangeRound([0, 400])),
+
+    barChart()
+        .dimension(curr200)
+        .group(curr200s)
+          .x(d3.scale.linear()
+             .domain([2, 7])
+             .rangeRound([0, 200])),
+
+    barChart()
+        .dimension(pwm200)
+        .group(pwm200s)
+          .x(d3.scale.linear()
+             .domain([1300, 1900])
+             .rangeRound([0, 400])),
+      
+    barChart()
+        .dimension(gpw200)
+        .group(gpw200s)
+          .x(d3.scale.linear()
+             .domain([2, 5])
+             .rangeRound([0, 200])),
+
+  ];
+
+  // Given our array of charts, which we assume are in the same order as the
+  // .chart elements in the DOM, bind the charts to the DOM and render them.
+  // We also listen to the chart's brush events to update the display.
+  var chart = d3.selectAll(".chart")
+      .data(charts)
+      .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
+
+  // Render the initial lists.
+  var list = d3.selectAll(".list")
+      .data([testList]);
+
+  // Render the total.
+  d3.selectAll("#total")
+      .text(formatNumber(test.size()));
+
+  renderAll();
+
+  // Renders the specified chart or list.
+  function render(method) {
+    d3.select(this).call(method);
+  }
+
+  // Whenever the brush moves, re-rendering everything.
+  function renderAll() {
+      chart.each(render);
+      list.each(render);
+      d3.select("#active").text(formatNumber(all.value()));
+  }
+
+  window.filter = function(filters) {
+    filters.forEach(function(d, i) { charts[i].filter(d); });
+    renderAll();
+  };
+
+  window.reset = function(i) {
+    charts[i].filter(null);
+    renderAll();
+  };
+
+  function testList(div) {
+    var flightsByGPW = nestByGPW.entries(gpw200.top(40));
+
+    div.each(function() {
+        var gpw200 = d3.select(this).selectAll(".gpw200")
+            .data(flightsByGPW, function(d) { return d.key; });
+
+        gpw200.enter().append("div")
+          .attr("class", "gpw200");
+
+        gpw200.exit().remove();
+
+      var test = gpw200.order().selectAll(".test")
+          .data(function(d) { return d.values; }, function(d) { return d.index; });
+
+      var testEnter = test.enter().append("div")
+          .attr("class", "test");
+
+      testEnter.append("div")
+            .attr("class", "motor")
+            .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
+
+        testEnter.append("div")
+            .attr("class",  "prop")
+            .text(function(d) { return d.prop; });
+
+        testEnter.append("div")
+            .attr("class", "batt")
+            .text(function(d) { return d.batt; });
+
+        testEnter.append("div")
+            .attr("class", "maxcurr")
+            .text(function(d) { return d.maxcurr + "A"; });
+
+        testEnter.append("div")
+            .attr("class", "curr200")
+            .text(function(d) { return d.curr200 + "A@200g"; });
+
+        test.exit().remove();
+
+      test.order();
+    });
+  }
+
+  function barChart() {
+    if (!barChart.id) barChart.id = 0;
+
+    var margin = {top: 10, right: 10, bottom: 20, left: 10},
+        x,
+        y = d3.scale.linear().range([100, 0]),
+        id = barChart.id++,
+        axis = d3.svg.axis().orient("bottom"),
+        brush = d3.svg.brush(),
+        brushDirty,
+        dimension,
+        group,
+        round;
+
+    function chart(div) {
+      var width = x.range()[1],
+          height = y.range()[0];
+
+      y.domain([0, group.top(1)[0].value]);
+
+      div.each(function() {
+        var div = d3.select(this),
+            g = div.select("g");
+
+        // Create the skeletal chart.
+        if (g.empty()) {
+          div.select(".title").append("a")
+              .attr("href", "javascript:reset(" + id + ")")
+              .attr("class", "reset")
+              .text("reset")
+              .style("display", "none");
+
+          g = div.append("svg")
+              .attr("width", width + margin.left + margin.right)
+              .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+          g.append("clipPath")
+              .attr("id", "clip-" + id)
+            .append("rect")
+              .attr("width", width)
+              .attr("height", height);
+
+          g.selectAll(".bar")
+              .data(["background", "foreground"])
+            .enter().append("path")
+              .attr("class", function(d) { return d + " bar"; })
+              .datum(group.all());
+
+          g.selectAll(".foreground.bar")
+              .attr("clip-path", "url(#clip-" + id + ")");
+
+          g.append("g")
+              .attr("class", "axis")
+              .attr("transform", "translate(0," + height + ")")
+              .call(axis);
+
+          // Initialize the brush component with pretty resize handles.
+          var gBrush = g.append("g").attr("class", "brush").call(brush);
+          gBrush.selectAll("rect").attr("height", height);
+          gBrush.selectAll(".resize").append("path").attr("d", resizePath);
+        }
+
+        // Only redraw the brush if set externally.
+        if (brushDirty) {
+          brushDirty = false;
+          g.selectAll(".brush").call(brush);
+          div.select(".title a").style("display", brush.empty() ? "none" : null);
+          if (brush.empty()) {
+            g.selectAll("#clip-" + id + " rect")
+                .attr("x", 0)
+                .attr("width", width);
+          } else {
+            var extent = brush.extent();
+            g.selectAll("#clip-" + id + " rect")
+                .attr("x", x(extent[0]))
+                .attr("width", x(extent[1]) - x(extent[0]));
+          }
+        }
+
+        g.selectAll(".bar").attr("d", barPath);
+      });
+
+      function barPath(groups) {
+        var path = [],
+            i = -1,
+            n = groups.length,
+            d;
+        while (++i < n) {
+          d = groups[i];
+          path.push("M", x(d.key), ",", height, "V", y(d.value), "h9V", height);
+        }
+        return path.join("");
+      }
+
+      function resizePath(d) {
+        var e = +(d == "e"),
+            x = e ? 1 : -1,
+            y = height / 3;
+        return "M" + (.5 * x) + "," + y
+            + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
+            + "V" + (2 * y - 6)
+            + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
+            + "Z"
+            + "M" + (2.5 * x) + "," + (y + 8)
+            + "V" + (2 * y - 8)
+            + "M" + (4.5 * x) + "," + (y + 8)
+            + "V" + (2 * y - 8);
+      }
+    }
+
+    brush.on("brushstart.chart", function() {
+      var div = d3.select(this.parentNode.parentNode.parentNode);
+      div.select(".title a").style("display", null);
+    });
+
+    brush.on("brush.chart", function() {
+      var g = d3.select(this.parentNode),
+          extent = brush.extent();
+      if (round) g.select(".brush")
+          .call(brush.extent(extent = extent.map(round)))
+        .selectAll(".resize")
+          .style("display", null);
+      g.select("#clip-" + id + " rect")
+          .attr("x", x(extent[0]))
+          .attr("width", x(extent[1]) - x(extent[0]));
+      dimension.filterRange(extent);
+    });
+
+    brush.on("brushend.chart", function() {
+      if (brush.empty()) {
+        var div = d3.select(this.parentNode.parentNode.parentNode);
+        div.select(".title a").style("display", "none");
+        div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
+        dimension.filterAll();
+      }
+    });
+
+    chart.margin = function(_) {
+      if (!arguments.length) return margin;
+      margin = _;
+      return chart;
+    };
+
+    chart.x = function(_) {
+      if (!arguments.length) return x;
+      x = _;
+      axis.scale(x);
+      brush.x(x);
+      return chart;
+    };
+
+    chart.y = function(_) {
+      if (!arguments.length) return y;
+      y = _;
+      return chart;
+    };
+
+    chart.dimension = function(_) {
+      if (!arguments.length) return dimension;
+      dimension = _;
+      return chart;
+    };
+
+    chart.filter = function(_) {
+      if (_) {
+        brush.extent(_);
+        dimension.filterRange(_);
+      } else {
+        brush.clear();
+        dimension.filterAll();
+      }
+      brushDirty = true;
+      return chart;
+    };
+
+    chart.group = function(_) {
+      if (!arguments.length) return group;
+      group = _;
+      return chart;
+    };
+
+    chart.round = function(_) {
+      if (!arguments.length) return round;
+      round = _;
+      return chart;
+    };
+
+    return d3.rebind(chart, brush, "on");
+  }
+});
+
+</script>
