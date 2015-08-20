@@ -342,8 +342,9 @@ d3.csv("summary.csv", function(error, tests) {
           .data(batts.reduceCount().all().filter(function(d) { return d.value > 0; }));
 
       b.enter().append("option")
-          .attr("class", "batt")
-          .text(function(d) { return d.key; });
+          .attr("class", "batt");
+
+      b.text(function(d) { return d.key; });
 
       b.exit().remove();
 
