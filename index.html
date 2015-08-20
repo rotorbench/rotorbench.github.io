@@ -96,7 +96,7 @@ h1, h2 {
 }
 
 #maxthr-chart {
-  width: 430px;
+  width: 450px;
 }
 
 #pwm200-chart {
@@ -104,13 +104,21 @@ h1, h2 {
 }
 
 #curr200-chart {
-  width: 260px;
+  width: 190px;
 }
 
 #gpw200-chart {
-  width: 260px;
+  width: 190px;
 }
-            
+
+#thr50-chart
+  width: 270px;
+}
+
+#curr50-chart {
+    width: 60px;
+}
+
 #test-list {
   min-height: 1024px;
 }
@@ -169,15 +177,22 @@ aside {
   <div id="maxthr-chart" class="chart">
     <div class="title">Max Thrust</div>
   </div>
-  <div id="curr200-chart" class="chart">
-    <div class="title">Current at 200g</div>
-  </div>
   <div id="pwm200-chart" class="chart">
     <div class="title">PWM at 200g</div>
   </div>
-  <div id="gpw200-chart" class="chart">
-    <div class="title">Grams per Watt at 200g</div>
+  <div id="curr200-chart" class="chart">
+    <div class="title">Current at 200g</div>
   </div>
+  <div id="gpw200-chart" class="chart">
+    <div class="title">Grams/Watt at 200g</div>
+  </div>
+  <div id="curr50-chart" class="chart">
+    <div class="title">Current at 50%</div>
+  </div>
+  <div id="thr50-chart" class="chart">
+    <div class="title">Thrust at 50%</div>
+  </div>
+
 </div>
 
 <aside id="totals"><span id="active">-</span> of <span id="total">-</span> tests selected.</aside>
@@ -201,7 +216,7 @@ d3.csv("summary.csv", function(error, tests) {
   // Various formatters.
   var formatNumber = d3.format(",d"),
       formatChange = d3.format("+,d");
-    
+
   // A little coercion, since the CSV is untyped.
   tests.forEach(function(d, i) {
       d.index = i;
@@ -210,6 +225,8 @@ d3.csv("summary.csv", function(error, tests) {
       d.pwm200 = +d.pwm200;
       d.curr200 = +d.curr200;
       d.gpw200 = +d.gpw200;
+      d.curr50 = +d.curr50;
+      d.thr50 = +d.thr50;
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
@@ -224,7 +241,11 @@ d3.csv("summary.csv", function(error, tests) {
       curr200 = test.dimension(function(d) { return d.curr200; }),
       curr200s = curr200.group(Math.floor),
       gpw200 = test.dimension(function(d) { return d.gpw200; }),
-      gpw200s = gpw200.group(Math.floor);
+      gpw200s = gpw200.group(Math.floor),
+      curr50 = test.dimension(function(d) { return d.curr50; }),
+      curr50s = curr50.group(Math.floor),
+      thr50 = test.dimension(function(d) { return d.thr50; }),
+      thr50s = thr50.group(Math.floor),
       batt = test.dimension(function(d) { return d.batt; }),
       batts = batt.group();
 
@@ -242,14 +263,7 @@ d3.csv("summary.csv", function(error, tests) {
         .group(maxthrs)
           .x(d3.scale.linear()
              .domain([100, 1200])
-             .rangeRound([0, 400])),
-
-    barChart()
-        .dimension(curr200)
-        .group(curr200s)
-          .x(d3.scale.linear()
-             .domain([2, 7])
-             .rangeRound([0, 200])),
+             .rangeRound([0, 440])),
 
     barChart()
         .dimension(pwm200)
@@ -257,12 +271,33 @@ d3.csv("summary.csv", function(error, tests) {
           .x(d3.scale.linear()
              .domain([1300, 1900])
              .rangeRound([0, 400])),
-      
+
+    barChart()
+        .dimension(curr200)
+        .group(curr200s)
+          .x(d3.scale.linear()
+             .domain([2, 6])
+             .rangeRound([0, 140])),
+
     barChart()
         .dimension(gpw200)
         .group(gpw200s)
           .x(d3.scale.linear()
-             .domain([2, 5])
+             .domain([2, 6])
+             .rangeRound([0, 130])),
+
+    barChart()
+        .dimension(curr50)
+        .group(curr50s)
+          .x(d3.scale.linear()
+             .domain([1, 8])
+             .rangeRound([0, 100])),
+
+    barChart()
+        .dimension(thr50)
+        .group(thr50s)
+          .x(d3.scale.linear()
+             .domain([40, 550])
              .rangeRound([0, 200])),
 
   ];
@@ -286,7 +321,7 @@ d3.csv("summary.csv", function(error, tests) {
         batt.filter(data ? data.key : null);
         renderAll();
   });
- 
+
   // Render the total.
   d3.selectAll("#total")
       .text(formatNumber(test.size()));
