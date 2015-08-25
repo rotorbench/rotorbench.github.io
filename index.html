@@ -264,14 +264,14 @@ d3.csv("summary.csv", function(error, tests) {
         .dimension(maxcurr)
         .group(maxcurrs)
           .x(d3.scale.linear()
-             .domain([3, 30])
+             .domain([3, 40])
              .rangeRound([0, 200])),
 
     barChart()
         .dimension(maxthr)
         .group(maxthrs)
           .x(d3.scale.linear()
-             .domain([100, 1200])
+             .domain([100, 1400])
              .rangeRound([0, 440])),
 
     barChart()
@@ -285,7 +285,7 @@ d3.csv("summary.csv", function(error, tests) {
         .dimension(curr200)
         .group(curr200s)
           .x(d3.scale.linear()
-             .domain([2, 6])
+             .domain([2, 7])
              .rangeRound([0, 140])),
 
     barChart()
@@ -299,14 +299,14 @@ d3.csv("summary.csv", function(error, tests) {
         .dimension(curr50)
         .group(curr50s)
           .x(d3.scale.linear()
-             .domain([1, 8])
+             .domain([1, 11])
              .rangeRound([0, 100])),
 
     barChart()
         .dimension(thr50)
         .group(thr50s)
           .x(d3.scale.linear()
-             .domain([40, 550])
+             .domain([40, 700])
              .rangeRound([0, 200])),
 
   ];
