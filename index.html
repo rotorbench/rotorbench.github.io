@@ -104,7 +104,7 @@ h1, h2 {
 }
 
 #curr200-chart {
-  width: 190px;
+  width: 200px;
 }
 
 #gpw200-chart {
@@ -116,7 +116,7 @@ h1, h2 {
 }
 
 #curr50-chart {
-    width: 60px;
+    width: 80px;
 }
 
 #test-list {
@@ -286,7 +286,7 @@ d3.csv("summary.csv", function(error, tests) {
         .group(curr200s)
           .x(d3.scale.linear()
              .domain([2, 7])
-             .rangeRound([0, 140])),
+             .rangeRound([0, 180])),
 
     barChart()
         .dimension(gpw200)
@@ -300,14 +300,14 @@ d3.csv("summary.csv", function(error, tests) {
         .group(curr50s)
           .x(d3.scale.linear()
              .domain([1, 11])
-             .rangeRound([0, 100])),
+             .rangeRound([0, 120])),
 
     barChart()
         .dimension(thr50)
         .group(thr50s)
           .x(d3.scale.linear()
              .domain([40, 700])
-             .rangeRound([0, 200])),
+             .rangeRound([0, 250])),
 
   ];
 
