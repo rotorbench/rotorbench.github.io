@@ -140,6 +140,11 @@ h1, h2 {
     width: 40px;
 }
 
+#prop-list .test div.prop {
+    display: inline-block;
+    width: 40px;
+}
+
 #test-list .test div {
   display: inline-block;
     width: 120px;
@@ -174,6 +179,10 @@ h1, h2 {
 <div id="body">
 
   Battery: <select id="batteryselect">
+    <option value="">All</option>
+  </select>
+
+  Max Prop: <select id="propselect">
     <option value="">All</option>
   </select>
 
@@ -236,6 +245,12 @@ d3.csv("summary.csv", function(error, tests) {
       d.gpw200 = +d.gpw200;
       d.curr50 = +d.curr50;
       d.thr50 = +d.thr50;
+      d.propd = d.prop.match(/.*(\d{4}).*/)[1];
+      if (d.propd[1] == "0") {
+          d.propd = +d.propd[0];
+      } else {
+          d.propd = +d.propd.substr(0, 2);
+      }
   });
 
   // Create the crossfilter for the relevant dimensions and groups.
@@ -256,7 +271,9 @@ d3.csv("summary.csv", function(error, tests) {
       thr50 = test.dimension(function(d) { return d.thr50; }),
       thr50s = thr50.group(Math.floor),
       batt = test.dimension(function(d) { return d.batt; }),
-      batts = batt.group();
+      batts = batt.group(),
+      prop = test.dimension(function(d) { return d.propd; }),
+      props = prop.group();
 
   var charts = [
 
@@ -331,6 +348,15 @@ d3.csv("summary.csv", function(error, tests) {
         renderAll();
   });
 
+  var propsel = d3.select("#propselect");
+    propsel.on("change", function() {
+        var options = propsel.selectAll('option');
+        var selectedIndex = propsel.property('selectedIndex'),
+            data          = options[0][selectedIndex].__data__;
+        prop.filterRange([0, data ? data.key+1 : 10000]);
+        renderAll();
+  });
+
   // Render the total.
   d3.selectAll("#total")
       .text(formatNumber(test.size()));
@@ -357,6 +383,15 @@ d3.csv("summary.csv", function(error, tests) {
 
       b.exit().remove();
 
+      var p = propsel.selectAll(".prop")
+          .data(props.reduceCount().all().filter(function(d) { return d.value > 0; }));
+
+      p.enter().append("option")
+          .attr("class", "prop");
+
+      p.text(function(d) { return d.key; });
+
+      p.exit().remove();
 
       d3.select("#active").text(formatNumber(all.value()));
   }
