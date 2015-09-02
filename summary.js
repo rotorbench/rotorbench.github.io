@@ -4,9 +4,8 @@ d3.csv("summary.csv", function(error, tests) {
         .key(function(d) { return Math.floor(d.gpw200); });
 
 
-    // Various formatters.
-    var formatNumber = d3.format(",d"),
-        formatChange = d3.format("+,d");
+    // formatters.
+    var formatNumber = d3.format(",d");
 
     // A little coercion, since the CSV is untyped.
     tests.forEach(function(d, i) {
