@@ -96,8 +96,8 @@ d3.csv("summary.csv", function(error, tests) {
             .group(thr50s)
             .x(d3.scale.linear()
                .domain([40, 700])
-               .rangeRound([0, 250])),
-
+               .rangeRound([0, 250]))
+            .filter([125, 250]),
     ];
 
     // Given our array of charts, which we assume are in the same order as the
