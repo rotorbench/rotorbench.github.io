@@ -1,7 +1,9 @@
 d3.csv("summary.csv", function(error, tests) {
 
-    var nestByGPW = d3.nest()
-        .key(function(d) { return Math.floor(d.gpw200); });
+    var nestBy = function(field) {
+        return d3.nest()
+            .key(function(d) { return Math.floor(d[field]); });
+    };
 
 
     // formatters.
@@ -109,7 +111,7 @@ d3.csv("summary.csv", function(error, tests) {
 
     // Render the initial lists.
     var list = d3.selectAll(".list")
-        .data([testList]);
+        .data(testList(thr50, 'thr50', true));
 
     var battsel = d3.select("#batteryselect");
     battsel.on("change", function() {
@@ -178,56 +180,60 @@ d3.csv("summary.csv", function(error, tests) {
         renderAll();
     };
 
-    function testList(div) {
-        var flightsByGPW = nestByGPW.entries(gpw200.top(40));
+    function testList(listField, listFieldS, rev) {
+        return [function(div) {
+            var listEntries = nestBy(listFieldS).entries(listField.top(40));
+            if (rev) {
+                listEntries = listEntries.reverse();
+            }
 
-        div.each(function() {
-            var gpw200 = d3.select(this).selectAll(".gpw200")
-                .data(flightsByGPW, function(d) { return d.key; });
+            div.each(function() {
+                var l = d3.select(this).selectAll(".entry")
+                    .data(listEntries, function(d) { return d.key; });
 
-            gpw200.enter().append("div")
-                .attr("class", "gpw200");
+                l.enter().append("div")
+                    .attr("class", "entry");
 
-            gpw200.exit().remove();
+                l.exit().remove();
 
-            var test = gpw200.order().selectAll(".test")
-                .data(function(d) { return d.values; }, function(d) { return d.index; });
+                var test = l.order().selectAll(".test")
+                    .data(function(d) { return d.values; }, function(d) { return d.index; });
 
-            var testEnter = test.enter().append("div")
-                .attr("class", "test");
+                var testEnter = test.enter().append("div")
+                    .attr("class", "test");
 
-            testEnter.append("div")
-                .attr("class", "motor")
-                .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
+                testEnter.append("div")
+                    .attr("class", "motor")
+                    .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
 
-            testEnter.append("div")
-                .attr("class",  "prop")
-                .text(function(d) { return d.prop; });
+                testEnter.append("div")
+                    .attr("class",  "prop")
+                    .text(function(d) { return d.prop; });
 
-            testEnter.append("div")
-                .attr("class", "batt")
-                .text(function(d) { return d.batt; });
+                testEnter.append("div")
+                    .attr("class", "batt")
+                    .text(function(d) { return d.batt; });
 
-            testEnter.append("div")
-                .attr("class", "maxcurr")
-                .text(function(d) { return d.maxcurr + "A"; });
+                testEnter.append("div")
+                    .attr("class", "maxcurr")
+                    .text(function(d) { return d.maxcurr + "A"; });
 
-            testEnter.append("div")
-                .attr("class", "curr200")
-                .text(function(d) { return d.curr200 + "A@200g"; });
+                testEnter.append("div")
+                    .attr("class", "curr200")
+                    .text(function(d) { return d.curr200 + "A@200g"; });
 
-            testEnter.append("div")
-                .attr("class", "thr50")
-                .text(function(d) { return d.thr50 + "g@50%"; });
+                testEnter.append("div")
+                    .attr("class", "thr50")
+                    .text(function(d) { return d.thr50 + "g@50%"; });
 
-            testEnter.append("div")
-                .attr("class", "maxthr")
-                .text(function(d) { return d.maxthr + "g max"; });
+                testEnter.append("div")
+                    .attr("class", "maxthr")
+                    .text(function(d) { return d.maxthr + "g max"; });
 
-            test.exit().remove();
+                test.exit().remove();
 
-            test.order();
-        });
+            });
+        }];
     }
 
     function barChart() {
