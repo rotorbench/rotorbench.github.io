@@ -109,10 +109,6 @@ d3.csv("summary.csv", function(error, tests) {
         .data(charts)
         .each(function(chart) { chart.on("brush", renderAll).on("brushend", renderAll); });
 
-    // Render the initial lists.
-    var list = d3.selectAll(".list")
-        .data(testList(thr50, 'thr50', true));
-
     var battsel = d3.select("#batteryselect");
     battsel.on("change", function() {
         var options = battsel.selectAll('option');
@@ -145,7 +141,8 @@ d3.csv("summary.csv", function(error, tests) {
     // Whenever the brush moves, re-rendering everything.
     function renderAll() {
         chart.each(render);
-        list.each(render);
+
+        renderTestList(thr50, 'thr50', true);
 
         var b = battsel.selectAll(".batt")
             .data(batts.reduceCount().all().filter(function(d) { return d.value > 0; }));
@@ -180,60 +177,54 @@ d3.csv("summary.csv", function(error, tests) {
         renderAll();
     };
 
-    function testList(listField, listFieldS, rev) {
-        return [function(div) {
-            var listEntries = nestBy(listFieldS).entries(listField.top(40));
-            if (rev) {
-                listEntries = listEntries.reverse();
+    function renderTestList(listField, listFieldS, rev) {
+        var listEntries = nestBy(listFieldS).entries(listField.top(40));
+        var o = [];
+        for (var i = 0; i < listEntries.length; i++) {
+            for (var j = 0; j < listEntries[i].values.length; j++) {
+                o.push(listEntries[i].values[j]);
             }
+        }
+        listEntries = o;
+        if (rev) {
+            listEntries = listEntries.reverse();
+        }
 
-            div.each(function() {
-                var l = d3.select(this).selectAll(".entry")
-                    .data(listEntries, function(d) { return d.key; });
+        var l = d3.select('#result-vals').selectAll(".entry")
+            .data(listEntries, function(d) { return d.mfg + d.size + d.kv + d.prop + d.batt; });
 
-                l.enter().append("div")
-                    .attr("class", "entry");
+        var row = l.enter().append("tr")
+            .attr("class", "entry test");
 
-                l.exit().remove();
+        l.exit().remove();
 
-                var test = l.order().selectAll(".test")
-                    .data(function(d) { return d.values; }, function(d) { return d.index; });
+        row.append("td")
+            .attr("class", "motor")
+            .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
 
-                var testEnter = test.enter().append("div")
-                    .attr("class", "test");
+        row.append("td")
+            .attr("class",  "prop")
+            .text(function(d) { return d.prop; });
 
-                testEnter.append("div")
-                    .attr("class", "motor")
-                    .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
+        row.append("td")
+            .attr("class", "batt")
+            .text(function(d) { return d.batt; });
 
-                testEnter.append("div")
-                    .attr("class",  "prop")
-                    .text(function(d) { return d.prop; });
+        row.append("td")
+            .attr("class", "maxcurr")
+            .text(function(d) { return d.maxcurr + "A"; });
 
-                testEnter.append("div")
-                    .attr("class", "batt")
-                    .text(function(d) { return d.batt; });
+        row.append("td")
+            .attr("class", "curr200")
+            .text(function(d) { return d.curr200 + "A"; });
 
-                testEnter.append("div")
-                    .attr("class", "maxcurr")
-                    .text(function(d) { return d.maxcurr + "A"; });
+        row.append("td")
+            .attr("class", "thr50")
+            .text(function(d) { return d.thr50 + "g"; });
 
-                testEnter.append("div")
-                    .attr("class", "curr200")
-                    .text(function(d) { return d.curr200 + "A@200g"; });
-
-                testEnter.append("div")
-                    .attr("class", "thr50")
-                    .text(function(d) { return d.thr50 + "g@50%"; });
-
-                testEnter.append("div")
-                    .attr("class", "maxthr")
-                    .text(function(d) { return d.maxthr + "g max"; });
-
-                test.exit().remove();
-
-            });
-        }];
+        row.append("td")
+            .attr("class", "maxthr")
+            .text(function(d) { return d.maxthr + "g"; });
     }
 
     function barChart() {

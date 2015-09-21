@@ -9,7 +9,7 @@ body {
   font-family: "Helvetica Neue";
   margin: 40px auto;
   width: 960px;
-  min-height: 2000px;
+  min-height: 1200px;
 }
 
 #body {
@@ -119,52 +119,6 @@ h1, h2 {
     width: 80px;
 }
 
-#test-list {
-  min-height: 1024px;
-  margin-top: 1em;
-}
-
-#test-list .test {
-  line-height: 1.5em;
-  background: #eee;
-  width: 800px;
-  margin-bottom: 1px;
-}
-
-#test-list .time {
-  color: #999;
-}
-
-#test-list .test div.batt {
-    display: inline-block;
-    width: 40px;
-}
-
-#prop-list .test div.prop {
-    display: inline-block;
-    width: 40px;
-}
-
-#test-list .test div {
-  display: inline-block;
-    width: 120px;
-    text-align: right;
-}
-
-#test-list div.motor {
-  width: 180px;
-  padding-right: 10px;
-  text-align: left;
-}
-
-#test-list div.maxcurr {
-    width: 80px;
-}
-
-#test-list .early {
-  color: green;
-}
-
 #totals {
   position: absolute;
   left: 740px;
@@ -216,7 +170,19 @@ h1, h2 {
 </div>
     
 <div id="lists">
-  <div id="test-list" class="list"></div>
+  <table id="results">
+    <thead>
+      <th>Motor</th>
+      <th>Prop</th>
+      <th>Batt</th>
+      <th>Max Current</th>
+      <th>Current @200g</th>
+      <th>Thrust @50%</th>
+      <th>Max Thrust</th>
+    </thead>
+    <tbody id="result-vals" class="list">
+    </tbody>
+  </table>
 </div>
 
 </div>
