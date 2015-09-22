@@ -198,33 +198,35 @@ d3.csv("summary.csv", function(error, tests) {
 
         l.exit().remove();
 
+        var f2 = d3.format(",.2f");
+
         row.append("td")
-            .attr("class", "motor")
+            .attr("class", "val motor")
             .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
 
         row.append("td")
-            .attr("class",  "prop")
+            .attr("class",  "val prop")
             .text(function(d) { return d.prop; });
 
         row.append("td")
-            .attr("class", "batt")
+            .attr("class", "val batt")
             .text(function(d) { return d.batt; });
 
         row.append("td")
-            .attr("class", "maxcurr")
-            .text(function(d) { return d.maxcurr + "A"; });
+            .attr("class", "val maxcurr")
+            .text(function(d) { return f2(d.maxcurr) + "A"; });
 
         row.append("td")
-            .attr("class", "curr200")
-            .text(function(d) { return d.curr200 + "A"; });
+            .attr("class", "val curr200")
+            .text(function(d) { return f2(d.curr200) + "A"; });
 
         row.append("td")
-            .attr("class", "thr50")
-            .text(function(d) { return d.thr50 + "g"; });
+            .attr("class", "val thr50")
+            .text(function(d) { return f2(d.thr50) + "g"; });
 
         row.append("td")
-            .attr("class", "maxthr")
-            .text(function(d) { return d.maxthr + "g"; });
+            .attr("class", "val maxthr")
+            .text(function(d) { return f2(d.maxthr) + "g"; });
     }
 
     function barChart() {
