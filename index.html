@@ -143,8 +143,9 @@ h1, h2 {
 
 #results thead tr th a {
   text-decoration: none;
-  font-size: smaller;
   margin: 2px;
+  position: relative;
+  bottom: 2px;
   cursor: pointer;
 }
 
@@ -216,10 +217,10 @@ h1, h2 {
         <th>Motor</th>
         <th>Prop</th>
         <th>Batt</th>
-        <th><a id="up-maxcurr">&uarr;</a>Max Current<a id="down-maxcurr">&darr;</a></th>
-        <th><a id="up-curr200">&uarr;</a>Current @200g<a id="down-curr200">&darr;</a></th>
-        <th><a id="up-thr50">&uarr;</a>Thrust @50%<a id="down-thr50">&darr;</a></th>
-        <th><a id="up-maxthr">&uarr;</a>Max Thrust<a id="down-maxthr">&darr;</a></th>
+        <th><a id="up-maxcurr">&and;</a>Max Current<a id="down-maxcurr">&or;</a></th>
+        <th><a id="up-curr200">&and;</a>Current @200g<a id="down-curr200">&or;</a></th>
+        <th><a id="up-thr50">&and;</a>Thrust @50%<a id="down-thr50">&or;</a></th>
+        <th><a id="up-maxthr">&and;</a>Max Thrust<a id="down-maxthr">&or;</a></th>
       </tr>
     </thead>
     <tbody id="result-vals" class="list">
