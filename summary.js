@@ -202,6 +202,9 @@ d3.csv("summary.csv", function(error, tests) {
                 o.push(listEntries[i].values[j]);
             }
         }
+        // The above *should* be sorted, but aren't exactly due to
+        // groupings.  This ensures they're properly sorted.
+        o.sort(function(a, b) { return a[listFieldS] < b[listFieldS] ? -1 : 1; });
         if (desc) {
             o = o.reverse();
         }
@@ -219,33 +222,67 @@ d3.csv("summary.csv", function(error, tests) {
 
         var f2 = d3.format(",.2f");
 
-        row.append("td")
-            .attr("class", "val motor")
-            .text(function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; });
+        var cols = [
+            {col: 'motor',
+             val: function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; },
+             width: 166},
+            {col: 'prop',
+             val: function(d) { return d.prop; },
+             width: 128},
+            {col: 'batt',
+             val: function(d) { return d.batt; },
+             width: 42},
+            {col: 'maxcurr',
+             val: function(d) { return f2(d.maxcurr) + "A"; },
+             numval: function(d) { return d.maxcurr },
+             width: 132},
+            {col: 'curr200',
+             val: function(d) { return f2(d.curr200) + "A"; },
+             numval: function(d) { return d.curr200; },
+             width: 149},
+            {col: 'thr50',
+             val: function(d) { return f2(d.thr50) + "g"; },
+             numval: function(d) { return d.thr50; },
+             width: 138},
+            {col: 'maxthr',
+             val: function(d) { return f2(d.maxthr) + "g"; },
+             numval: function(d) { return d.maxthr; },
+             width: 123}
+        ];
 
-        row.append("td")
-            .attr("class",  "val prop")
-            .text(function(d) { return d.prop; });
+        // Build some conversion ranges
+        cols.forEach(function(x) {
+            if (x.numval) {
+                x.scale = d3.scale.linear().domain(d3.extent(listEntries, x.numval)).range([0, x.width]);
+            }
+        });
 
-        row.append("td")
-            .attr("class", "val batt")
-            .text(function(d) { return d.batt; });
 
-        row.append("td")
-            .attr("class", "val maxcurr")
-            .text(function(d) { return f2(d.maxcurr) + "A"; });
-
-        row.append("td")
-            .attr("class", "val curr200")
-            .text(function(d) { return f2(d.curr200) + "A"; });
-
-        row.append("td")
-            .attr("class", "val thr50")
-            .text(function(d) { return f2(d.thr50) + "g"; });
-
-        row.append("td")
-            .attr("class", "val maxthr")
-            .text(function(d) { return f2(d.maxthr) + "g"; });
+        cols.forEach(function(x) {
+            if (x.numval) {
+                (function(row, x) {
+                    var ranger =  function(d) { return x.scale(x.numval(d)); };
+                    var td = row.append("td")
+                        .attr("width", function(d) {
+                            return ranger(d) + "px";
+                        });
+                    var outer = td.append("div")
+                        .attr("style", function(d) {
+                            return "border-left: " + ranger(d) + "px solid #aaf;";
+                        });
+                    var inner = outer.append("div")
+                        .attr("style", function(d) {
+                            return "margin-left: -" + ranger(d) + "px;"
+                        })
+                        .attr("class", "val " + x.col)
+                        .text(x.val);
+                })(row, x);
+            } else {
+                var td = row.append("td")
+                    .attr("class", "val " + x.col);
+                td.text(x.val);
+            }
+        });
     }
 
     function barChart() {
