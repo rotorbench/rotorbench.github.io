@@ -5,7 +5,7 @@ d3.csv("summary.csv", function(error, tests) {
             .key(function(d) { return Math.floor(d[field]); });
     };
 
-    var sortAsc = true;
+    var sortDesc = true;
     var sortField = 'thr50';
     var sorts = {};
 
@@ -150,16 +150,16 @@ d3.csv("summary.csv", function(error, tests) {
     d3.selectAll("#results thead tr th a").
         on('click', function(e) {
             var x = this.id.split(/-/);
-            sortAsc = x[0] == 'up';
+            sortDesc = x[0] == 'down';
             sortField = x[1];
-            renderTestList(sorts[sortField], sortField, sortAsc);
+            renderTestList(sorts[sortField], sortField, sortDesc);
         }, true);
 
     // Whenever the brush moves, re-rendering everything.
     function renderAll() {
         chart.each(render);
 
-        renderTestList(sorts[sortField], sortField, sortAsc);
+        renderTestList(sorts[sortField], sortField, sortDesc);
 
         var b = battsel.selectAll(".batt")
             .data(batts.reduceCount().all().filter(function(d) { return d.value > 0; }));
@@ -194,7 +194,7 @@ d3.csv("summary.csv", function(error, tests) {
         renderAll();
     };
 
-    function renderTestList(listField, listFieldS, rev) {
+    function renderTestList(listField, listFieldS, desc) {
         var listEntries = nestBy(listFieldS).entries(listField.top(40));
         var o = [];
         for (var i = 0; i < listEntries.length; i++) {
@@ -202,7 +202,7 @@ d3.csv("summary.csv", function(error, tests) {
                 o.push(listEntries[i].values[j]);
             }
         }
-        if (rev) {
+        if (desc) {
             o = o.reverse();
         }
         listEntries = o;
