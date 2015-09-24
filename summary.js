@@ -5,6 +5,9 @@ d3.csv("summary.csv", function(error, tests) {
             .key(function(d) { return Math.floor(d[field]); });
     };
 
+    var sortAsc = true;
+    var sortField = 'thr50';
+    var sorts = {};
 
     // formatters.
     var formatNumber = d3.format(",d");
@@ -14,6 +17,7 @@ d3.csv("summary.csv", function(error, tests) {
         d.index = i;
         d.maxcurr = +d.maxcurr;
         d.maxthr = +d.maxthr;
+
         d.pwm200 = +d.pwm200;
         d.curr200 = +d.curr200;
         d.gpw200 = +d.gpw200;
@@ -48,6 +52,11 @@ d3.csv("summary.csv", function(error, tests) {
         batts = batt.group(),
         prop = test.dimension(function(d) { return d.propd; }),
         props = prop.group();
+
+    sorts.maxcurr = maxcurr;
+    sorts.curr200 = curr200;
+    sorts.thr50 = thr50;
+    sorts.maxthr = maxthr;
 
     var charts = [
 
@@ -138,11 +147,19 @@ d3.csv("summary.csv", function(error, tests) {
         d3.select(this).call(method);
     }
 
+    d3.selectAll("#results thead tr th a").
+        on('click', function(e) {
+            var x = this.id.split(/-/);
+            sortAsc = x[0] == 'up';
+            sortField = x[1];
+            renderTestList(sorts[sortField], sortField, sortAsc);
+        }, true);
+
     // Whenever the brush moves, re-rendering everything.
     function renderAll() {
         chart.each(render);
 
-        renderTestList(thr50, 'thr50', true);
+        renderTestList(sorts[sortField], sortField, sortAsc);
 
         var b = battsel.selectAll(".batt")
             .data(batts.reduceCount().all().filter(function(d) { return d.value > 0; }));
@@ -185,10 +202,12 @@ d3.csv("summary.csv", function(error, tests) {
                 o.push(listEntries[i].values[j]);
             }
         }
-        listEntries = o;
         if (rev) {
-            listEntries = listEntries.reverse();
+            o = o.reverse();
         }
+        listEntries = o;
+
+        d3.select('#result-vals').selectAll('.entry').remove();
 
         var l = d3.select('#result-vals').selectAll(".entry")
             .data(listEntries, function(d) { return d.mfg + d.size + d.kv + d.prop + d.batt; });
