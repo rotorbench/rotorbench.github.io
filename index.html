@@ -141,6 +141,12 @@ h1, h2 {
   background-color: #eee;
 }
 
+#results thead tr th a {
+  text-decoration: none;
+  font-size: smaller;
+  margin: 2px;
+}
+
 #result-vals tr:nth-child(even) {
   background: #ccf;
 }
@@ -205,13 +211,13 @@ h1, h2 {
 <div id="lists">
   <table id="results">
     <thead>
-      <th>Motor</th>
-      <th>Prop</th>
-      <th>Batt</th>
-      <th>Max Current</th>
-      <th>Current @200g</th>
-      <th>Thrust @50%</th>
-      <th>Max Thrust</th>
+      <th><a href="#" id="up-motor">&uarr;</a>Motor<a href="#" id="down-motor">&darr;</a></th>
+      <th><a href="#" id="up-prop">&uarr;</a>Prop<a href="#" id="down-prop">&darr;</a></th>
+      <th><a href="#" id="up-batt">&uarr;</a>Batt<a href="#" id="down-batt">&darr;</a></th>
+      <th><a href="#" id="up-maxcurr">&uarr;</a>Max Current<a href="#" id="down-maxcurr">&darr;</a></th>
+      <th><a href="#" id="up-curr200">&uarr;</a>Current @200g<a href="#" id="down-cur200">&darr;</a></th>
+      <th><a href="#" id="up-thr50">&uarr;</a>Thrust @50%<a href="#" id="down-thr50">&darr;</a></th>
+      <th><a href="#" id="up-maxthr">&uarr;</a>Max Thrust<a href="#" id="down-maxthr">&darr;</a></th>
     </thead>
     <tbody id="result-vals" class="list">
     </tbody>
