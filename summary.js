@@ -204,10 +204,8 @@ d3.csv("summary.csv", function(error, tests) {
         }
         // The above *should* be sorted, but aren't exactly due to
         // groupings.  This ensures they're properly sorted.
-        o.sort(function(a, b) { return a[listFieldS] < b[listFieldS] ? -1 : 1; });
-        if (desc) {
-            o = o.reverse();
-        }
+        var order = desc ? function(x) { return 0 - x; } : function(x) { return x; };
+        o.sort(function(a, b) { return order(a[listFieldS] - b[listFieldS]); });
         listEntries = o;
 
         d3.select('#result-vals').selectAll('.entry').remove();
