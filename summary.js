@@ -222,7 +222,7 @@ d3.csv("summary.csv", function(error, tests) {
 
         var cols = [
             {col: 'motor',
-             val: function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'kv'; },
+             val: function(d) { return d.mfg + ' ' + d.size + '/' + d.kv + 'Kv'; },
              width: 166},
             {col: 'prop',
              val: function(d) { return d.prop; },
