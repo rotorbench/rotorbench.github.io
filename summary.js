@@ -251,7 +251,9 @@ d3.csv("summary.csv", function(error, tests) {
         // Build some conversion ranges
         cols.forEach(function(x) {
             if (x.numval) {
-                x.scale = d3.scale.linear().domain(d3.extent(listEntries, x.numval)).range([0, x.width]);
+                x.scale = d3.scale.linear()
+                    .domain([0, d3.max(listEntries, x.numval)])
+                    .range([0, x.width]);
             }
         });
 
