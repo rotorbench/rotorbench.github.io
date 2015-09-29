@@ -494,29 +494,27 @@ d3.csv("summary.csv", function(error, tests) {
     }
 
     // "Call to action"
-    (function() {
-        d3.transition()
-            .delay(1500)
-            .duration(2500)
-            .ease("cubic")
-            .tween("stuff", function() {
-                var di = d3.interpolate([40, 700], [575, 700]);
-                return function(t) {
-                    charts[6].filter(di(t));
-                    renderAll();
-                };
-            })
-            .each("end", function() {
-                d3.transition()
-                    .duration(2000)
-                    .ease("cubic")
-                    .tween("stuff", function() {
-                        var di = d3.interpolate([575, 700], [125, 250]);
-                        return function(t) {
-                            charts[6].filter(di(t));
-                            renderAll();
-                        };
-                    })
-            });
-    })();
+    d3.transition()
+        .delay(1500)
+        .duration(2500)
+        .ease("cubic")
+        .tween("stuff", function() {
+            var di = d3.interpolate([40, 700], [575, 700]);
+            return function(t) {
+                charts[6].filter(di(t));
+                renderAll();
+            };
+        })
+        .each("end", function() {
+            d3.transition()
+                .duration(2000)
+                .ease("cubic")
+                .tween("stuff", function() {
+                    var di = d3.interpolate([575, 700], [125, 250]);
+                    return function(t) {
+                        charts[6].filter(di(t));
+                        renderAll();
+                    };
+                })
+        });
 });
