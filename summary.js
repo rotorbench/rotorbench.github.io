@@ -12,6 +12,26 @@ d3.csv("summary.csv", function(error, tests) {
     // formatters.
     var formatNumber = d3.format(",d");
 
+    var parseProp = function(prop) {
+        var rv = {name: prop};
+        // Examples:
+        // HQ6045BNN
+        // HQ6045x3CFN
+        // HQ5040x3CFN(4)
+        var p = prop.match(/.*\((\d)\)$/)
+        if (p) {
+            rv.d = +p[1];
+        } else {
+            rv.d = prop.match(/.*(\d{4}).*/)[1];
+            if (rv.d[1] == "0") {
+                rv.d = +rv.d[0];
+            } else {
+                rv.d = +rv.d.substr(0, 2);
+            }
+        }
+        return rv;
+    }
+
     // A little coercion, since the CSV is untyped.
     tests.forEach(function(d, i) {
         d.index = i;
@@ -23,12 +43,9 @@ d3.csv("summary.csv", function(error, tests) {
         d.gpw200 = +d.gpw200;
         d.curr50 = +d.curr50;
         d.thr50 = +d.thr50;
-        d.propd = d.prop.match(/.*(\d{4}).*/)[1];
-        if (d.propd[1] == "0") {
-            d.propd = +d.propd[0];
-        } else {
-            d.propd = +d.propd.substr(0, 2);
-        }
+
+        var p = parseProp(d.prop);
+        d.propd = p.d;
     });
 
     // Create the crossfilter for the relevant dimensions and groups.
