@@ -124,8 +124,7 @@ d3.csv("summary.csv", function(error, tests) {
             .group(thr50s)
             .x(d3.scale.linear()
                .domain([40, 700])
-               .rangeRound([0, 250]))
-            .filter([125, 250]),
+               .rangeRound([0, 250])),
     ];
 
     // Given our array of charts, which we assume are in the same order as the
@@ -493,4 +492,31 @@ d3.csv("summary.csv", function(error, tests) {
 
         return d3.rebind(chart, brush, "on");
     }
+
+    // "Call to action"
+    (function() {
+        d3.transition()
+            .delay(1500)
+            .duration(2500)
+            .ease("cubic")
+            .tween("stuff", function() {
+                var di = d3.interpolate([40, 700], [575, 700]);
+                return function(t) {
+                    charts[6].filter(di(t));
+                    renderAll();
+                };
+            })
+            .each("end", function() {
+                d3.transition()
+                    .duration(2000)
+                    .ease("cubic")
+                    .tween("stuff", function() {
+                        var di = d3.interpolate([575, 700], [125, 250]);
+                        return function(t) {
+                            charts[6].filter(di(t));
+                            renderAll();
+                        };
+                    })
+            });
+    })();
 });
